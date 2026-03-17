@@ -92,7 +92,7 @@ def protected():
 ## Development
 
 ```bash
-pip install -e ".[dev]"
+make install    # uv sync --all-extras
 make test
 make lint
 make typecheck
