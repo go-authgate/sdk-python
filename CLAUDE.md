@@ -11,12 +11,14 @@ Package: `authgate` (Python 3.10+, src layout with hatchling build)
 ## Common Commands
 
 ```bash
-make install       # Install in editable mode with dev deps
+make install       # uv sync --all-extras (install all deps)
 make test          # Run all tests with pytest
 make lint          # Run ruff linter
 make fmt           # Format code with ruff
 make typecheck     # Run mypy strict
 ```
+
+Project is managed with [uv](https://docs.astral.sh/uv/). All `make` targets use `uv run` so no manual venv activation is needed.
 
 ## Code Style
 
