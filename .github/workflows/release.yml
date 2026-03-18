@@ -5,7 +5,11 @@ on:
     tags: ["v*"]
 
 jobs:
+  test:
+    uses: ./.github/workflows/testing.yml
+
   publish:
+    needs: test
     runs-on: ubuntu-latest
     permissions:
       id-token: write
