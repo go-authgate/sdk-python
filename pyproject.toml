@@ -1,40 +1,40 @@
 [build-system]
-requires = ["hatchling"]
 build-backend = "hatchling.build"
+requires = ["hatchling"]
 
 [project]
-name = "go-authgate"
-dynamic = ["version"]
-description = "Python SDK for AuthGate — OAuth 2.0 authentication and token management"
-readme = "README.md"
-license = "MIT"
-requires-python = ">=3.10"
-authors = [{ name = "AuthGate Contributors" }]
+authors = [{name = "AuthGate Contributors"}]
 classifiers = [
-    "Development Status :: 4 - Beta",
-    "Intended Audience :: Developers",
-    "License :: OSI Approved :: MIT License",
-    "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.10",
-    "Programming Language :: Python :: 3.11",
-    "Programming Language :: Python :: 3.12",
-    "Programming Language :: Python :: 3.13",
-    "Typing :: Typed",
+  "Development Status :: 4 - Beta",
+  "Intended Audience :: Developers",
+  "License :: OSI Approved :: MIT License",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Typing :: Typed",
 ]
 dependencies = ["httpx>=0.27,<1", "keyring>=25,<27"]
+description = "Python SDK for AuthGate — OAuth 2.0 authentication and token management"
+dynamic = ["version"]
+license = "MIT"
+name = "go-authgate"
+readme = "README.md"
+requires-python = ">=3.10"
 
 [project.optional-dependencies]
+dev = [
+  "pytest>=8",
+  "pytest-asyncio>=0.23",
+  "pytest-httpx>=0.30",
+  "coverage>=7",
+  "mypy>=1.10",
+  "ruff>=0.5",
+]
+django = ["django>=4.2"]
 fastapi = ["fastapi>=0.100"]
 flask = ["flask>=2.3"]
-django = ["django>=4.2"]
-dev = [
-    "pytest>=8",
-    "pytest-asyncio>=0.23",
-    "pytest-httpx>=0.30",
-    "coverage>=7",
-    "mypy>=1.10",
-    "ruff>=0.5",
-]
 
 [tool.hatch.version]
 path = "src/authgate/_version.py"
@@ -43,21 +43,21 @@ path = "src/authgate/_version.py"
 packages = ["src/authgate"]
 
 [tool.ruff]
-target-version = "py310"
 line-length = 100
+target-version = "py310"
 
 [tool.ruff.lint]
 select = [
-    "E",
-    "F",
-    "W",
-    "I",
-    "N",
-    "UP",
-    "B",
-    "A",
-    "SIM",
-    "RUF",
+  "E",
+  "F",
+  "W",
+  "I",
+  "N",
+  "UP",
+  "B",
+  "A",
+  "SIM",
+  "RUF",
 ]
 
 [tool.ruff.lint.isort]
@@ -70,21 +70,21 @@ warn_return_any = true
 warn_unused_configs = true
 
 [[tool.mypy.overrides]]
+ignore_missing_imports = true
 module = ["keyring", "keyring.errors"]
-ignore_missing_imports = true
 
 [[tool.mypy.overrides]]
+ignore_missing_imports = true
 module = ["fastapi", "fastapi.*"]
-ignore_missing_imports = true
 
 [[tool.mypy.overrides]]
+ignore_missing_imports = true
 module = ["flask", "flask.*"]
-ignore_missing_imports = true
 
 [[tool.mypy.overrides]]
-module = ["django", "django.*"]
 ignore_missing_imports = true
+module = ["django", "django.*"]
 
 [tool.pytest.ini_options]
-testpaths = ["tests"]
 asyncio_mode = "auto"
+testpaths = ["tests"]
