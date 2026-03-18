@@ -3,6 +3,7 @@
 [![PyPI](https://img.shields.io/pypi/v/go-authgate)](https://pypi.org/project/go-authgate/)
 [![Python](https://img.shields.io/pypi/pyversions/go-authgate)](https://pypi.org/project/go-authgate/)
 [![CI](https://github.com/go-authgate/sdk-python/actions/workflows/testing.yml/badge.svg)](https://github.com/go-authgate/sdk-python/actions/workflows/testing.yml)
+[![Trivy](https://github.com/go-authgate/sdk-python/actions/workflows/trivy.yml/badge.svg)](https://github.com/go-authgate/sdk-python/actions/workflows/trivy.yml)
 [![License](https://img.shields.io/pypi/l/go-authgate)](LICENSE)
 
 Python SDK for [AuthGate](https://github.com/go-authgate) — OAuth 2.0 authentication and token management.
@@ -50,11 +51,14 @@ client, token = await async_authenticate(
 ## Client Credentials (M2M)
 
 ```python
-from authgate.oauth import OAuthClient, Endpoints
+from authgate.discovery.client import DiscoveryClient
+from authgate.oauth import OAuthClient
 from authgate.clientcreds import TokenSource, BearerAuth
 import httpx
 
-client = OAuthClient("my-service", endpoints, client_secret="secret")
+disco = DiscoveryClient("https://auth.example.com")
+meta = disco.fetch()
+client = OAuthClient("my-service", meta.to_endpoints(), client_secret="secret")
 ts = TokenSource(client, scopes=["api"])
 
 # Auto-attaches Bearer token to every request
