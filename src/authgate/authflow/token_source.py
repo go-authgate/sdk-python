@@ -46,18 +46,25 @@ class TokenSource:
         self._client = client
         self._store = store
         self._lock = threading.RLock()
+        self._cached: Token | None = None
         self._inflight: threading.Event | None = None
         self._inflight_result: Token | None = None
         self._inflight_error: Exception | None = None
 
     def token(self) -> Token:
         """Return a valid token, refreshing from store or server as needed."""
-        # Fast path: check for valid cached token
+        # Fast path: check in-memory cache first
+        if self._cached is not None and not self._cached.is_expired():
+            return self._cached
+
+        # Check persistent store
         if self._store is not None:
             try:
                 stored = self._store.load(self._client.client_id)
                 if stored.is_valid():
-                    return _credstore_to_oauth(stored)
+                    tok = _credstore_to_oauth(stored)
+                    self._cached = tok
+                    return tok
             except NotFoundError:
                 pass
 
@@ -100,12 +107,15 @@ class TokenSource:
             try:
                 stored = self._store.load(self._client.client_id)
                 if stored.is_valid():
-                    return _credstore_to_oauth(stored)
+                    tok = _credstore_to_oauth(stored)
+                    self._cached = tok
+                    return tok
 
                 # Try refresh if we have a refresh token
                 if stored.refresh_token:
                     refreshed = self._client.refresh_token(stored.refresh_token)
                     self._save_token(refreshed)
+                    self._cached = refreshed
                     return refreshed
             except NotFoundError:
                 pass
@@ -115,6 +125,7 @@ class TokenSource:
     def save_token(self, token: Token) -> None:
         """Persist a token to the store (if configured)."""
         with self._lock:
+            self._cached = token
             self._save_token(token)
 
     def _save_token(self, token: Token) -> None:

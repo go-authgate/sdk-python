@@ -13,6 +13,15 @@ from authgate.oauth.models import Token
 _DEFAULT_EXPIRY_DELTA = 30.0  # seconds
 
 
+def _is_token_valid(token: Token | None, expiry_delta: float) -> bool:
+    """Check whether a token is present and not expired."""
+    if token is None or not token.access_token:
+        return False
+    if token.expires_at == 0:
+        return True
+    return (time.time() + expiry_delta) < token.expires_at
+
+
 class TokenSource:
     """Thread-safe, auto-caching token source for client credentials (sync).
 
@@ -39,23 +48,16 @@ class TokenSource:
         """Return a valid access token, fetching a new one if expired."""
         # Fast path
         with self._lock:
-            if self._token is not None and self._is_valid():
-                return self._token
+            if _is_token_valid(self._token, self._expiry_delta):
+                return self._token  # type: ignore[return-value]
 
         return self._slow_path()
-
-    def _is_valid(self) -> bool:
-        if self._token is None or not self._token.access_token:
-            return False
-        if self._token.expires_at == 0:
-            return True
-        return (time.time() + self._expiry_delta) < self._token.expires_at
 
     def _slow_path(self) -> Token:
         with self._lock:
             # Re-check after acquiring lock
-            if self._token is not None and self._is_valid():
-                return self._token
+            if _is_token_valid(self._token, self._expiry_delta):
+                return self._token  # type: ignore[return-value]
 
             if self._inflight is not None:
                 event = self._inflight
@@ -104,18 +106,11 @@ class AsyncTokenSource:
 
     async def token(self) -> Token:
         """Return a valid access token, fetching a new one if expired."""
-        if self._token is not None and self._is_valid():
-            return self._token
+        if _is_token_valid(self._token, self._expiry_delta):
+            return self._token  # type: ignore[return-value]
 
         async with self._lock:
-            if self._token is not None and self._is_valid():
-                return self._token
+            if _is_token_valid(self._token, self._expiry_delta):
+                return self._token  # type: ignore[return-value]
             self._token = await self._client.client_credentials(self._scopes)
             return self._token
-
-    def _is_valid(self) -> bool:
-        if self._token is None or not self._token.access_token:
-            return False
-        if self._token.expires_at == 0:
-            return True
-        return (time.time() + self._expiry_delta) < self._token.expires_at

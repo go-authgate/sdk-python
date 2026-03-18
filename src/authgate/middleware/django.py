@@ -40,7 +40,7 @@ class BearerAuthMiddleware:
         self._mode = ValidationMode.TOKEN_INFO
         self._required_scopes: list[str] = []
 
-    def _ensure_configured(self, request: HttpRequest) -> None:
+    def _ensure_configured(self) -> None:
         if self._client is not None:
             return
         from django.conf import settings
@@ -50,7 +50,7 @@ class BearerAuthMiddleware:
         self._required_scopes = getattr(settings, "AUTHGATE_REQUIRED_SCOPES", [])
 
     def __call__(self, request: HttpRequest) -> HttpResponse:
-        self._ensure_configured(request)
+        self._ensure_configured()
 
         if self._client is None:
             return self.get_response(request)

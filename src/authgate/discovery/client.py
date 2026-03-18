@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-import copy
+import dataclasses
 import threading
 import time
 
@@ -13,6 +13,35 @@ from authgate.exceptions import DiscoveryError
 
 _WELL_KNOWN_PATH = "/.well-known/openid-configuration"
 _DEFAULT_CACHE_TTL = 3600.0  # 1 hour
+
+
+def _copy_metadata(meta: Metadata) -> Metadata:
+    """Return a shallow copy of Metadata with independent list fields."""
+    return dataclasses.replace(
+        meta,
+        response_types_supported=list(meta.response_types_supported),
+        subject_types_supported=list(meta.subject_types_supported),
+        id_token_signing_alg_values_supported=list(meta.id_token_signing_alg_values_supported),
+        scopes_supported=list(meta.scopes_supported),
+        token_endpoint_auth_methods_supported=list(meta.token_endpoint_auth_methods_supported),
+        grant_types_supported=list(meta.grant_types_supported),
+        claims_supported=list(meta.claims_supported),
+        code_challenge_methods_supported=list(meta.code_challenge_methods_supported),
+    )
+
+
+def _validate_and_enrich(meta: Metadata, expected_issuer: str) -> Metadata:
+    """Validate issuer and fill in default endpoint URLs."""
+    issuer = meta.issuer.rstrip("/")
+    if issuer != expected_issuer:
+        raise DiscoveryError(
+            f"discovery: issuer mismatch: got {meta.issuer!r}, expected {expected_issuer!r}"
+        )
+    if not meta.device_authorization_endpoint:
+        meta.device_authorization_endpoint = issuer + "/oauth/device/code"
+    if not meta.introspection_endpoint:
+        meta.introspection_endpoint = issuer + "/oauth/introspect"
+    return meta
 
 
 class DiscoveryClient:
@@ -39,13 +68,13 @@ class DiscoveryClient:
         """
         with self._lock:
             if self._cached is not None and (time.time() - self._fetched_at) < self._cache_ttl:
-                return copy.deepcopy(self._cached)
+                return _copy_metadata(self._cached)
         return self._refresh()
 
     def _refresh(self) -> Metadata:
         with self._lock:
             if self._cached is not None and (time.time() - self._fetched_at) < self._cache_ttl:
-                return copy.deepcopy(self._cached)
+                return _copy_metadata(self._cached)
 
             url = self._issuer_url + _WELL_KNOWN_PATH
             resp = self._http.get(url)
@@ -54,23 +83,11 @@ class DiscoveryClient:
 
             body = resp.json()
             meta = _parse_metadata(body)
-
-            issuer = meta.issuer.rstrip("/")
-            if issuer != self._issuer_url:
-                raise DiscoveryError(
-                    f"discovery: issuer mismatch: got {meta.issuer!r},"
-                    f" expected {self._issuer_url!r}"
-                )
-
-            if not meta.device_authorization_endpoint:
-                meta.device_authorization_endpoint = issuer + "/oauth/device/code"
-
-            if not meta.introspection_endpoint:
-                meta.introspection_endpoint = issuer + "/oauth/introspect"
+            _validate_and_enrich(meta, self._issuer_url)
 
             self._cached = meta
             self._fetched_at = time.time()
-            return copy.deepcopy(meta)
+            return _copy_metadata(meta)
 
 
 def _get_str(body: dict[str, object], key: str) -> str:

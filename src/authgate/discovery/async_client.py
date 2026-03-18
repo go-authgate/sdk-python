@@ -3,17 +3,19 @@
 from __future__ import annotations
 
 import asyncio
-import copy
 import time
 
 import httpx
 
-from authgate.discovery.client import _parse_metadata
+from authgate.discovery.client import (
+    _DEFAULT_CACHE_TTL,
+    _WELL_KNOWN_PATH,
+    _copy_metadata,
+    _parse_metadata,
+    _validate_and_enrich,
+)
 from authgate.discovery.models import Metadata
 from authgate.exceptions import DiscoveryError
-
-_WELL_KNOWN_PATH = "/.well-known/openid-configuration"
-_DEFAULT_CACHE_TTL = 3600.0
 
 
 class AsyncDiscoveryClient:
@@ -36,13 +38,13 @@ class AsyncDiscoveryClient:
     async def fetch(self) -> Metadata:
         """Retrieve the OIDC provider metadata, using the cache if still valid."""
         if self._cached is not None and (time.time() - self._fetched_at) < self._cache_ttl:
-            return copy.deepcopy(self._cached)
+            return _copy_metadata(self._cached)
         return await self._refresh()
 
     async def _refresh(self) -> Metadata:
         async with self._lock:
             if self._cached is not None and (time.time() - self._fetched_at) < self._cache_ttl:
-                return copy.deepcopy(self._cached)
+                return _copy_metadata(self._cached)
 
             url = self._issuer_url + _WELL_KNOWN_PATH
             resp = await self._http.get(url)
@@ -51,20 +53,8 @@ class AsyncDiscoveryClient:
 
             body = resp.json()
             meta = _parse_metadata(body)
-
-            issuer = meta.issuer.rstrip("/")
-            if issuer != self._issuer_url:
-                raise DiscoveryError(
-                    f"discovery: issuer mismatch: got {meta.issuer!r},"
-                    f" expected {self._issuer_url!r}"
-                )
-
-            if not meta.device_authorization_endpoint:
-                meta.device_authorization_endpoint = issuer + "/oauth/device/code"
-
-            if not meta.introspection_endpoint:
-                meta.introspection_endpoint = issuer + "/oauth/introspect"
+            _validate_and_enrich(meta, self._issuer_url)
 
             self._cached = meta
             self._fetched_at = time.time()
-            return copy.deepcopy(meta)
+            return _copy_metadata(meta)

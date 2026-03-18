@@ -6,6 +6,7 @@ import contextlib
 import json
 import os
 import time
+from collections.abc import Callable
 from typing import Generic, TypeVar
 
 from authgate.credstore.protocols import Codec
@@ -143,10 +144,10 @@ class FileStore(Generic[T]):
         if parent:
             os.makedirs(parent, mode=0o700, exist_ok=True)
 
-    def _with_file_lock(self, fn: object) -> None:
+    def _with_file_lock(self, fn: Callable[[], None]) -> None:
         lock = _FileLock(self._file_path + ".lock")
         lock.acquire()
         try:
-            fn()  # type: ignore[operator]
+            fn()
         finally:
             lock.release()
