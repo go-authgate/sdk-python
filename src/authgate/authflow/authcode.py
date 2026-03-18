@@ -25,7 +25,7 @@ class _CallbackHandler(BaseHTTPRequestHandler):
     result: dict[str, str]  # shared via class attribute set by factory
     event: threading.Event
 
-    def do_GET(self) -> None:
+    def do_GET(self) -> None:  # noqa: N802
         parsed = urlparse(self.path)
         if parsed.path != "/callback":
             self.send_response(404)

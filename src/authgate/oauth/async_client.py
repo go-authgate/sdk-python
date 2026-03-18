@@ -89,11 +89,13 @@ class AsyncOAuthClient:
 
     async def exchange_device_code(self, device_code: str) -> Token:
         """Exchange a device code for tokens (RFC 8628 SS3.4)."""
-        return await self._token_request({
-            "grant_type": "urn:ietf:params:oauth:grant-type:device_code",
-            "device_code": device_code,
-            "client_id": self._client_id,
-        })
+        return await self._token_request(
+            {
+                "grant_type": "urn:ietf:params:oauth:grant-type:device_code",
+                "device_code": device_code,
+                "client_id": self._client_id,
+            }
+        )
 
     async def exchange_auth_code(
         self,
@@ -127,11 +129,13 @@ class AsyncOAuthClient:
 
     async def refresh_token(self, refresh_token: str) -> Token:
         """Exchange a refresh token for new tokens (RFC 6749 SS6)."""
-        return await self._token_request({
-            "grant_type": "refresh_token",
-            "refresh_token": refresh_token,
-            "client_id": self._client_id,
-        })
+        return await self._token_request(
+            {
+                "grant_type": "refresh_token",
+                "refresh_token": refresh_token,
+                "client_id": self._client_id,
+            }
+        )
 
     async def revoke(self, token: str) -> None:
         """Revoke a token (RFC 7009)."""
@@ -148,11 +152,14 @@ class AsyncOAuthClient:
         """Introspect a token (RFC 7662)."""
         if not self._endpoints.introspection_url:
             raise OAuthError("invalid_request", "introspection endpoint not configured")
-        resp = await self._post_form(self._endpoints.introspection_url, {
-            "token": token,
-            "client_id": self._client_id,
-            "client_secret": self._client_secret,
-        })
+        resp = await self._post_form(
+            self._endpoints.introspection_url,
+            {
+                "token": token,
+                "client_id": self._client_id,
+                "client_secret": self._client_secret,
+            },
+        )
         body = resp.json()
         return IntrospectionResult(
             active=body.get("active", False),

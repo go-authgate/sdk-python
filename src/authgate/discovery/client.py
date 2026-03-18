@@ -50,9 +50,7 @@ class DiscoveryClient:
             url = self._issuer_url + _WELL_KNOWN_PATH
             resp = self._http.get(url)
             if resp.status_code != 200:
-                raise DiscoveryError(
-                    f"discovery: unexpected status {resp.status_code} from {url}"
-                )
+                raise DiscoveryError(f"discovery: unexpected status {resp.status_code} from {url}")
 
             body = resp.json()
             meta = _parse_metadata(body)

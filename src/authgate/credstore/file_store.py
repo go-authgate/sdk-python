@@ -124,9 +124,7 @@ class FileStore(Generic[T]):
         except FileNotFoundError:
             return {}
         except (json.JSONDecodeError, OSError) as exc:
-            raise CredStoreError(
-                f"failed to read file {self._file_path!r}: {exc}"
-            ) from exc
+            raise CredStoreError(f"failed to read file {self._file_path!r}: {exc}") from exc
 
     def _write_storage_map(self, data: dict[str, str]) -> None:
         content = json.dumps({"data": data}, indent=2)
