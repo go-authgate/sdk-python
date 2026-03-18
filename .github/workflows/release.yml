@@ -8,8 +8,11 @@ jobs:
   test:
     uses: ./.github/workflows/testing.yml
 
+  trivy:
+    uses: ./.github/workflows/trivy.yml
+
   publish:
-    needs: test
+    needs: [test, trivy]
     runs-on: ubuntu-latest
     permissions:
       id-token: write
