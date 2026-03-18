@@ -51,50 +51,6 @@ wheels = [
 ]
 
 [[package]]
-name = "authgate"
-source = { editable = "." }
-dependencies = [
-    { name = "httpx" },
-    { name = "keyring" },
-]
-
-[package.optional-dependencies]
-dev = [
-    { name = "coverage" },
-    { name = "mypy" },
-    { name = "pytest" },
-    { name = "pytest-asyncio" },
-    { name = "pytest-httpx" },
-    { name = "ruff" },
-]
-django = [
-    { name = "django", version = "5.2.12", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.12'" },
-    { name = "django", version = "6.0.3", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.12'" },
-]
-fastapi = [
-    { name = "fastapi" },
-]
-flask = [
-    { name = "flask" },
-]
-
-[package.metadata]
-requires-dist = [
-    { name = "coverage", marker = "extra == 'dev'", specifier = ">=7" },
-    { name = "django", marker = "extra == 'django'", specifier = ">=4.2" },
-    { name = "fastapi", marker = "extra == 'fastapi'", specifier = ">=0.100" },
-    { name = "flask", marker = "extra == 'flask'", specifier = ">=2.3" },
-    { name = "httpx", specifier = ">=0.27,<1" },
-    { name = "keyring", specifier = ">=25,<27" },
-    { name = "mypy", marker = "extra == 'dev'", specifier = ">=1.10" },
-    { name = "pytest", marker = "extra == 'dev'", specifier = ">=8" },
-    { name = "pytest-asyncio", marker = "extra == 'dev'", specifier = ">=0.23" },
-    { name = "pytest-httpx", marker = "extra == 'dev'", specifier = ">=0.30" },
-    { name = "ruff", marker = "extra == 'dev'", specifier = ">=0.5" },
-]
-provides-extras = ["dev", "django", "fastapi", "flask"]
-
-[[package]]
 name = "backports-asyncio-runner"
 version = "1.2.0"
 source = { registry = "https://pypi.org/simple" }
@@ -405,7 +361,7 @@ name = "exceptiongroup"
 version = "1.3.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "typing-extensions", marker = "python_full_version < '3.13'" },
+    { name = "typing-extensions", marker = "python_full_version < '3.12'" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/50/79/66800aadf48771f6b62f7eb014e352e5d06856655206165d775e675a02c9/exceptiongroup-1.3.1.tar.gz", hash = "sha256:8b412432c6055b0b7d14c310000ae93352ed6754f70fa8f7c34141f91c4e3219", size = 30371, upload-time = "2025-11-21T23:01:54.787Z" }
 wheels = [
@@ -444,6 +400,50 @@ sdist = { url = "https://files.pythonhosted.org/packages/26/00/35d85dcce6c57fdc8
 wheels = [
     { url = "https://files.pythonhosted.org/packages/7f/9c/34f6962f9b9e9c71f6e5ed806e0d0ff03c9d1b0b2340088a0cf4bce09b18/flask-3.1.3-py3-none-any.whl", hash = "sha256:f4bcbefc124291925f1a26446da31a5178f9483862233b23c0c96a20701f670c", size = 103424, upload-time = "2026-02-19T05:00:56.027Z" },
 ]
+
+[[package]]
+name = "go-authgate"
+source = { editable = "." }
+dependencies = [
+    { name = "httpx" },
+    { name = "keyring" },
+]
+
+[package.optional-dependencies]
+dev = [
+    { name = "coverage" },
+    { name = "mypy" },
+    { name = "pytest" },
+    { name = "pytest-asyncio" },
+    { name = "pytest-httpx" },
+    { name = "ruff" },
+]
+django = [
+    { name = "django", version = "5.2.12", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.12'" },
+    { name = "django", version = "6.0.3", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.12'" },
+]
+fastapi = [
+    { name = "fastapi" },
+]
+flask = [
+    { name = "flask" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "coverage", marker = "extra == 'dev'", specifier = ">=7" },
+    { name = "django", marker = "extra == 'django'", specifier = ">=4.2" },
+    { name = "fastapi", marker = "extra == 'fastapi'", specifier = ">=0.100" },
+    { name = "flask", marker = "extra == 'flask'", specifier = ">=2.3" },
+    { name = "httpx", specifier = ">=0.27,<1" },
+    { name = "keyring", specifier = ">=25,<27" },
+    { name = "mypy", marker = "extra == 'dev'", specifier = ">=1.10" },
+    { name = "pytest", marker = "extra == 'dev'", specifier = ">=8" },
+    { name = "pytest-asyncio", marker = "extra == 'dev'", specifier = ">=0.23" },
+    { name = "pytest-httpx", marker = "extra == 'dev'", specifier = ">=0.30" },
+    { name = "ruff", marker = "extra == 'dev'", specifier = ">=0.5" },
+]
+provides-extras = ["dev", "django", "fastapi", "flask"]
 
 [[package]]
 name = "h11"
@@ -496,7 +496,7 @@ name = "importlib-metadata"
 version = "8.7.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "zipp" },
+    { name = "zipp", marker = "python_full_version < '3.12'" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/f3/49/3b30cad09e7771a4982d9975a8cbf64f00d4a1ececb53297f1d9a7be1b10/importlib_metadata-8.7.1.tar.gz", hash = "sha256:49fef1ae6440c182052f407c8d34a68f72efc36db9ca90dc0113398f2fdde8bb", size = 57107, upload-time = "2025-12-21T10:00:19.278Z" }
 wheels = [
