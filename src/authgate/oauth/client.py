@@ -156,7 +156,7 @@ class OAuthClient:
             jti=body.get("jti", ""),
         )
 
-    def user_info(self, access_token: str) -> UserInfo:
+    def userinfo(self, access_token: str) -> UserInfo:
         """Fetch user information from the UserInfo endpoint (OIDC Core 1.0 SS5.3)."""
         if not self._endpoints.userinfo_url:
             raise OAuthError("invalid_request", "userinfo endpoint not configured")

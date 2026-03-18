@@ -29,8 +29,8 @@ def main() -> None:
 
     # Use the client to call an OAuth endpoint (e.g., UserInfo).
     userinfo = client.userinfo(token.access_token)
-    print(f"Subject : {userinfo.get('sub')}")
-    print(f"Email   : {userinfo.get('email')}")
+    print(f"Subject : {userinfo.sub}")
+    print(f"Email   : {userinfo.email}")
 
 
 if __name__ == "__main__":

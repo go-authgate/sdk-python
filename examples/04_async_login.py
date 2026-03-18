@@ -28,7 +28,7 @@ async def main() -> None:
     print(f"Logged in!  access_token={token.access_token[:20]}...")
 
     userinfo = await client.userinfo(token.access_token)
-    print(f"Subject: {userinfo.get('sub')}")
+    print(f"Subject: {userinfo.sub}")
 
 
 if __name__ == "__main__":

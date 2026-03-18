@@ -159,7 +159,7 @@ class TestOAuthClient:
         assert result.active
         assert result.scope == "openid profile"
 
-    def test_user_info(self, endpoints: Endpoints) -> None:
+    def test_userinfo(self, endpoints: Endpoints) -> None:
         def handler(request: httpx.Request) -> httpx.Response:
             assert "Bearer" in request.headers["Authorization"]
             return httpx.Response(
@@ -177,7 +177,7 @@ class TestOAuthClient:
             endpoints,
             http_client=httpx.Client(transport=transport),
         )
-        info = client.user_info("access-token")
+        info = client.userinfo("access-token")
         assert info.sub == "user123"
         assert info.name == "Test User"
 
@@ -232,7 +232,7 @@ class TestOAuthClient:
         with pytest.raises(OAuthError, match="introspection endpoint"):
             client.introspect("tok")
         with pytest.raises(OAuthError, match="userinfo endpoint"):
-            client.user_info("tok")
+            client.userinfo("tok")
         with pytest.raises(OAuthError, match="tokeninfo endpoint"):
             client.token_info_request("tok")
 
