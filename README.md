@@ -98,6 +98,26 @@ def protected():
     return {"user": info.user_id}
 ```
 
+## Examples
+
+Ready-to-run examples are in the [`examples/`](examples/) directory:
+
+| File                                                            | Description                                                       |
+| --------------------------------------------------------------- | ----------------------------------------------------------------- |
+| [`01_user_login.py`](examples/01_user_login.py)                 | Interactive user login — auto-selects browser or device code flow |
+| [`02_client_credentials.py`](examples/02_client_credentials.py) | M2M service authentication with auto-cached tokens                |
+| [`03_fastapi_server.py`](examples/03_fastapi_server.py)         | FastAPI server with Bearer token validation and scope enforcement |
+| [`04_async_login.py`](examples/04_async_login.py)               | Async user login via device code flow                             |
+
+Set the required environment variables, then run with `uv`:
+
+```bash
+export AUTHGATE_URL="https://auth.example.com"
+export AUTHGATE_CLIENT_ID="my-app"
+
+uv run python examples/01_user_login.py
+```
+
 ## Development
 
 ```bash
