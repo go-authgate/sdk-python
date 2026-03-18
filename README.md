@@ -1,19 +1,24 @@
 # AuthGate Python SDK
 
+[![PyPI](https://img.shields.io/pypi/v/go-authgate)](https://pypi.org/project/go-authgate/)
+[![Python](https://img.shields.io/pypi/pyversions/go-authgate)](https://pypi.org/project/go-authgate/)
+[![CI](https://github.com/go-authgate/sdk-python/actions/workflows/testing.yml/badge.svg)](https://github.com/go-authgate/sdk-python/actions/workflows/testing.yml)
+[![License](https://img.shields.io/pypi/l/go-authgate)](LICENSE)
+
 Python SDK for [AuthGate](https://github.com/go-authgate) — OAuth 2.0 authentication and token management.
 
 ## Installation
 
 ```bash
-pip install authgate
+pip install go-authgate
 ```
 
 With framework support:
 
 ```bash
-pip install authgate[fastapi]
-pip install authgate[flask]
-pip install authgate[django]
+pip install go-authgate[fastapi]
+pip install go-authgate[flask]
+pip install go-authgate[django]
 ```
 
 ## Quick Start
