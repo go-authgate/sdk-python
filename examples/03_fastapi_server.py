@@ -22,7 +22,7 @@ from authgate.middleware.models import TokenInfo
 from authgate.oauth.client import OAuthClient
 
 AUTHGATE_URL = os.environ["AUTHGATE_URL"]
-CLIENT_ID = os.environ["AUTHGATE_CLIENT_ID"]
+CLIENT_ID = os.environ["CLIENT_ID"]
 
 # Build shared OAuth client once at startup.
 _meta = DiscoveryClient(AUTHGATE_URL).fetch()

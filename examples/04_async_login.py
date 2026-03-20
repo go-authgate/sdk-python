@@ -15,7 +15,7 @@ import os
 import authgate
 
 AUTHGATE_URL = os.environ["AUTHGATE_URL"]
-CLIENT_ID = os.environ["AUTHGATE_CLIENT_ID"]
+CLIENT_ID = os.environ["CLIENT_ID"]
 
 
 async def main() -> None:

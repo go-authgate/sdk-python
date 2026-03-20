@@ -18,8 +18,8 @@ from authgate.discovery.client import DiscoveryClient
 from authgate.oauth.client import OAuthClient
 
 AUTHGATE_URL = os.environ["AUTHGATE_URL"]
-CLIENT_ID = os.environ["AUTHGATE_CLIENT_ID"]
-CLIENT_SECRET = os.environ["AUTHGATE_CLIENT_SECRET"]
+CLIENT_ID = os.environ["CLIENT_ID"]
+CLIENT_SECRET = os.environ["CLIENT_SECRET"]
 API_URL = "https://api.example.com/data"
 
 

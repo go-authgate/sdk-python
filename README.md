@@ -113,7 +113,7 @@ Set the required environment variables, then run with `uv`:
 
 ```bash
 export AUTHGATE_URL="https://auth.example.com"
-export AUTHGATE_CLIENT_ID="my-app"
+export CLIENT_ID="my-app"
 
 uv run python examples/01_user_login.py
 ```
