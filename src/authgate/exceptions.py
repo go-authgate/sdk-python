@@ -1,5 +1,7 @@
 """AuthGate exception hierarchy."""
 
+from __future__ import annotations
+
 
 class AuthGateError(Exception):
     """Base exception for all AuthGate errors."""
