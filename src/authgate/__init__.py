@@ -12,7 +12,7 @@ from authgate.authflow.token_source import TokenSource
 from authgate.credstore import default_token_secure_store
 from authgate.discovery.async_client import AsyncDiscoveryClient
 from authgate.discovery.client import DiscoveryClient
-from authgate.exceptions import AuthFlowError, AuthGateError, NotFoundError
+from authgate.exceptions import AuthFlowError, AuthGateError, NotFoundError, OAuthError
 from authgate.oauth.async_client import AsyncOAuthClient
 from authgate.oauth.client import OAuthClient
 from authgate.oauth.models import Token
@@ -63,7 +63,7 @@ def authenticate(
     try:
         token = ts.token()
         return client, token
-    except (NotFoundError, AuthFlowError):
+    except (NotFoundError, AuthFlowError, OAuthError):
         pass
 
     # 5. No valid token — run the appropriate authentication flow
@@ -111,15 +111,24 @@ async def async_authenticate(
     # 2. Create async OAuth client
     client = AsyncOAuthClient(client_id, meta.to_endpoints())
 
-    # 3. Check stored token
+    # 3. Check stored token and attempt refresh if expired
     store = default_token_secure_store(service_name, store_path)
     try:
         stored = store.load(client_id)
-        if stored.is_valid():
-            from authgate.authflow.token_source import _credstore_to_oauth
+        from authgate.authflow.token_source import _credstore_to_oauth, _oauth_to_credstore
 
+        if stored.is_valid():
             token = _credstore_to_oauth(stored)
             return client, token
+
+        # Try refreshing with the stored refresh token
+        if stored.refresh_token:
+            try:
+                token = await client.refresh_token(stored.refresh_token)
+                store.save(client_id, _oauth_to_credstore(token, client_id))
+                return client, token
+            except OAuthError:
+                pass
     except NotFoundError:
         pass
 
