@@ -63,8 +63,13 @@ def authenticate(
     try:
         token = ts.token()
         return client, token
-    except (NotFoundError, AuthFlowError, OAuthError):
+    except (NotFoundError, AuthFlowError):
         pass
+    except OAuthError as exc:
+        # Only swallow errors indicating an invalid/expired refresh token.
+        # Re-raise unexpected OAuth errors (e.g., server_error) so they surface.
+        if exc.code not in ("invalid_grant", "invalid_token"):
+            raise
 
     # 5. No valid token — run the appropriate authentication flow
     if flow_mode == FlowMode.BROWSER:
@@ -115,20 +120,23 @@ async def async_authenticate(
     store = default_token_secure_store(service_name, store_path)
     try:
         stored = store.load(client_id)
-        from authgate.authflow.token_source import _credstore_to_oauth, _oauth_to_credstore
+        from authgate.authflow.token_source import credstore_to_oauth, oauth_to_credstore
 
         if stored.is_valid():
-            token = _credstore_to_oauth(stored)
+            token = credstore_to_oauth(stored)
             return client, token
 
         # Try refreshing with the stored refresh token
         if stored.refresh_token:
             try:
                 token = await client.refresh_token(stored.refresh_token)
-                store.save(client_id, _oauth_to_credstore(token, client_id))
+                store.save(client_id, oauth_to_credstore(token, client_id))
                 return client, token
-            except OAuthError:
-                pass
+            except OAuthError as exc:
+                # Only swallow errors indicating an invalid/expired refresh token.
+                # Re-raise unexpected OAuth errors (e.g., server_error).
+                if exc.code not in ("invalid_grant", "invalid_token"):
+                    raise
     except NotFoundError:
         pass
 
@@ -136,9 +144,9 @@ async def async_authenticate(
     token = await async_run_device_flow(client, _scopes)
 
     # 5. Persist
-    from authgate.authflow.token_source import _oauth_to_credstore
+    from authgate.authflow.token_source import oauth_to_credstore
 
-    store.save(client_id, _oauth_to_credstore(token, client_id))
+    store.save(client_id, oauth_to_credstore(token, client_id))
 
     return client, token
 
