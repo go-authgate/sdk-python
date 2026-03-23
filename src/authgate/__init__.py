@@ -12,7 +12,7 @@ from authgate.authflow.token_source import TokenSource
 from authgate.credstore import default_token_secure_store
 from authgate.discovery.async_client import AsyncDiscoveryClient
 from authgate.discovery.client import DiscoveryClient
-from authgate.exceptions import AuthGateError
+from authgate.exceptions import AuthFlowError, AuthGateError, NotFoundError
 from authgate.oauth.async_client import AsyncOAuthClient
 from authgate.oauth.client import OAuthClient
 from authgate.oauth.models import Token
@@ -63,7 +63,7 @@ def authenticate(
     try:
         token = ts.token()
         return client, token
-    except Exception:
+    except (NotFoundError, AuthFlowError):
         pass
 
     # 5. No valid token — run the appropriate authentication flow
@@ -111,20 +111,25 @@ async def async_authenticate(
     # 2. Create async OAuth client
     client = AsyncOAuthClient(client_id, meta.to_endpoints())
 
-    # 3. Check stored token (sync store, run in thread)
+    # 3. Check stored token
     store = default_token_secure_store(service_name, store_path)
-    ts = TokenSource(OAuthClient(client_id, meta.to_endpoints()), store=store)
     try:
-        token = ts.token()
-        return client, token
-    except Exception:
+        stored = store.load(client_id)
+        if stored.is_valid():
+            from authgate.authflow.token_source import _credstore_to_oauth
+
+            token = _credstore_to_oauth(stored)
+            return client, token
+    except NotFoundError:
         pass
 
     # 4. Run device flow (always, since auth code needs sync HTTP server)
     token = await async_run_device_flow(client, _scopes)
 
     # 5. Persist
-    ts.save_token(token)
+    from authgate.authflow.token_source import _oauth_to_credstore
+
+    store.save(client_id, _oauth_to_credstore(token, client_id))
 
     return client, token
 

@@ -2,15 +2,13 @@
 
 from __future__ import annotations
 
-from collections.abc import Callable
-
 from authgate.exceptions import OAuthError
 from authgate.middleware.core import ValidationMode, extract_bearer_token, validate_token
 from authgate.middleware.models import TokenInfo
 from authgate.oauth.client import OAuthClient
 
 try:
-    from fastapi import Depends, HTTPException, Request
+    from fastapi import HTTPException, Request
     from fastapi.security import HTTPBearer
 except ImportError as exc:
     raise ImportError(
@@ -69,27 +67,3 @@ class BearerAuth:
                 )
 
         return info
-
-
-def require_scope(*scopes: str) -> Callable[..., object]:
-    """FastAPI dependency that checks for additional scopes.
-
-    Must be used after BearerAuth.
-    """
-
-    _default = Depends()
-
-    async def dependency(info: TokenInfo = _default) -> TokenInfo:
-        for scope in scopes:
-            if not info.has_scope(scope):
-                raise HTTPException(
-                    status_code=403,
-                    detail={
-                        "error": "insufficient_scope",
-                        "error_description": f"Token does not have required scope: {scope}",
-                    },
-                    headers={"WWW-Authenticate": 'Bearer error="insufficient_scope"'},
-                )
-        return info
-
-    return dependency
