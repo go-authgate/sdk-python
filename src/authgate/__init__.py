@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import asyncio
 import enum
 
 from authgate._version import __version__
@@ -119,7 +120,7 @@ async def async_authenticate(
     # 3. Check stored token and attempt refresh if expired
     store = default_token_secure_store(service_name, store_path)
     try:
-        stored = store.load(client_id)
+        stored = await asyncio.to_thread(store.load, client_id)
         from authgate.authflow.token_source import credstore_to_oauth, oauth_to_credstore
 
         if stored.is_valid():
@@ -130,7 +131,7 @@ async def async_authenticate(
         if stored.refresh_token:
             try:
                 token = await client.refresh_token(stored.refresh_token)
-                store.save(client_id, oauth_to_credstore(token, client_id))
+                await asyncio.to_thread(store.save, client_id, oauth_to_credstore(token, client_id))
                 return client, token
             except OAuthError as exc:
                 # Only swallow errors indicating an invalid/expired refresh token.
@@ -146,7 +147,7 @@ async def async_authenticate(
     # 5. Persist
     from authgate.authflow.token_source import oauth_to_credstore
 
-    store.save(client_id, oauth_to_credstore(token, client_id))
+    await asyncio.to_thread(store.save, client_id, oauth_to_credstore(token, client_id))
 
     return client, token
 

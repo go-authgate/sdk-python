@@ -144,6 +144,7 @@ def run_auth_code_flow(
         code = result["code"]
     finally:
         server.shutdown()
+        server.server_close()
         server_thread.join(timeout=5)
 
     return client.exchange_auth_code(code, redirect_uri, pkce.verifier)
