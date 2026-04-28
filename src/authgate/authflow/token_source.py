@@ -11,7 +11,7 @@ from authgate.oauth.client import OAuthClient
 from authgate.oauth.models import Token
 
 
-def _credstore_to_oauth(t: StoredToken) -> Token:
+def credstore_to_oauth(t: StoredToken) -> Token:
     return Token(
         access_token=t.access_token,
         refresh_token=t.refresh_token,
@@ -20,7 +20,7 @@ def _credstore_to_oauth(t: StoredToken) -> Token:
     )
 
 
-def _oauth_to_credstore(t: Token, client_id: str) -> StoredToken:
+def oauth_to_credstore(t: Token, client_id: str) -> StoredToken:
     return StoredToken(
         access_token=t.access_token,
         refresh_token=t.refresh_token,
@@ -62,7 +62,7 @@ class TokenSource:
             try:
                 stored = self._store.load(self._client.client_id)
                 if stored.is_valid():
-                    tok = _credstore_to_oauth(stored)
+                    tok = credstore_to_oauth(stored)
                     self._cached = tok
                     return tok
             except NotFoundError:
@@ -107,7 +107,7 @@ class TokenSource:
             try:
                 stored = self._store.load(self._client.client_id)
                 if stored.is_valid():
-                    tok = _credstore_to_oauth(stored)
+                    tok = credstore_to_oauth(stored)
                     self._cached = tok
                     return tok
 
@@ -133,5 +133,5 @@ class TokenSource:
             return
         self._store.save(
             self._client.client_id,
-            _oauth_to_credstore(token, self._client.client_id),
+            oauth_to_credstore(token, self._client.client_id),
         )
