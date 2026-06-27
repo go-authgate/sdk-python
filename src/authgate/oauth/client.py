@@ -123,9 +123,15 @@ class OAuthClient:
         """Revoke a token (RFC 7009)."""
         if not self._endpoints.revocation_url:
             raise OAuthError("invalid_request", "revocation endpoint not configured")
+        data: dict[str, str] = {
+            "token": token,
+            "client_id": self._client_id,
+        }
+        if self._client_secret:
+            data["client_secret"] = self._client_secret
         resp = self._http.post(
             self._endpoints.revocation_url,
-            data={"token": token},
+            data=data,
         )
         if resp.status_code != 200:
             raise _parse_error_response(resp)

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import asyncio
 import enum
 
 from authgate._version import __version__
@@ -12,7 +13,7 @@ from authgate.authflow.token_source import TokenSource
 from authgate.credstore import default_token_secure_store
 from authgate.discovery.async_client import AsyncDiscoveryClient
 from authgate.discovery.client import DiscoveryClient
-from authgate.exceptions import AuthGateError
+from authgate.exceptions import AuthFlowError, AuthGateError, NotFoundError, OAuthError
 from authgate.oauth.async_client import AsyncOAuthClient
 from authgate.oauth.client import OAuthClient
 from authgate.oauth.models import Token
@@ -63,8 +64,13 @@ def authenticate(
     try:
         token = ts.token()
         return client, token
-    except Exception:
+    except (NotFoundError, AuthFlowError):
         pass
+    except OAuthError as exc:
+        # Only swallow errors indicating an invalid/expired refresh token.
+        # Re-raise unexpected OAuth errors (e.g., server_error) so they surface.
+        if exc.code not in ("invalid_grant", "invalid_token"):
+            raise
 
     # 5. No valid token — run the appropriate authentication flow
     if flow_mode == FlowMode.BROWSER:
@@ -111,20 +117,37 @@ async def async_authenticate(
     # 2. Create async OAuth client
     client = AsyncOAuthClient(client_id, meta.to_endpoints())
 
-    # 3. Check stored token (sync store, run in thread)
+    # 3. Check stored token and attempt refresh if expired
     store = default_token_secure_store(service_name, store_path)
-    ts = TokenSource(OAuthClient(client_id, meta.to_endpoints()), store=store)
     try:
-        token = ts.token()
-        return client, token
-    except Exception:
+        stored = await asyncio.to_thread(store.load, client_id)
+        from authgate.authflow.token_source import credstore_to_oauth, oauth_to_credstore
+
+        if stored.is_valid():
+            token = credstore_to_oauth(stored)
+            return client, token
+
+        # Try refreshing with the stored refresh token
+        if stored.refresh_token:
+            try:
+                token = await client.refresh_token(stored.refresh_token)
+                await asyncio.to_thread(store.save, client_id, oauth_to_credstore(token, client_id))
+                return client, token
+            except OAuthError as exc:
+                # Only swallow errors indicating an invalid/expired refresh token.
+                # Re-raise unexpected OAuth errors (e.g., server_error).
+                if exc.code not in ("invalid_grant", "invalid_token"):
+                    raise
+    except NotFoundError:
         pass
 
     # 4. Run device flow (always, since auth code needs sync HTTP server)
     token = await async_run_device_flow(client, _scopes)
 
     # 5. Persist
-    ts.save_token(token)
+    from authgate.authflow.token_source import oauth_to_credstore
+
+    await asyncio.to_thread(store.save, client_id, oauth_to_credstore(token, client_id))
 
     return client, token
 
