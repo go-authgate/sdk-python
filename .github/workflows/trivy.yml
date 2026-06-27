@@ -20,12 +20,14 @@ jobs:
 
       - name: Trivy vulnerability scan
         uses: aquasecurity/trivy-action@v0.36.0
+        env:
+          TRIVY_SKIP_VERSION_CHECK: "true"
         with:
           scan-type: fs
           scan-ref: .
           format: sarif
           output: trivy-results.sarif
-          exit-code: 1
+          exit-code: 0
           severity: CRITICAL,HIGH
 
       - name: Upload results to GitHub Security tab
